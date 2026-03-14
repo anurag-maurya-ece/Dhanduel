@@ -6,8 +6,6 @@ services:
     buildCommand: npm install
     startCommand: node server.js
     envVars:
-      - key: PORT
-        value: 5000
       - key: FRONTEND_URL
         value: https://frontend-theta-seven-69.vercel.app
     healthCheckPath: /api/health
