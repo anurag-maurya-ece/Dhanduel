@@ -1,0 +1,240 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-cyan: #00F0FF;
+  --color-brand-purple: #B388EB;
+  --color-brand-green: #00E676;
+  --color-brand-red: #FF3D00;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+:root {
+  /* Light Mode Variables */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  
+  --panel-bg: rgba(255, 255, 255, 0.7);
+  --panel-border: rgba(0, 0, 0, 0.05);
+  --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  
+  --nav-bg: rgba(255, 255, 255, 0.85);
+  --nav-border: rgba(0, 0, 0, 0.08);
+  --nav-icon: #64748b;
+  --nav-icon-hover-bg: rgba(0, 0, 0, 0.05);
+  --nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  /* Dark Mode Variables — Brightened for better visibility */
+  --background: #0A0B10;
+  --foreground: #F1F5F9; /* Brighter slate */
+  
+  --panel-bg: rgba(30, 32, 44, 0.6); /* Slightly more opaque and brighter */
+  --panel-border: rgba(255, 255, 255, 0.12); /* Brighter border */
+  --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  
+  --nav-bg: rgba(15, 17, 28, 0.95);
+  --nav-border: rgba(255, 255, 255, 0.15);
+  --nav-icon: #f1f5f9;
+  --nav-icon-hover-bg: rgba(255, 255, 255, 0.1);
+  --nav-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Base utility for glass containers */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* ── Glowing Bottom Navigation ─────────────────────────────── */
+
+.glow-nav-container {
+  width: auto;
+  max-width: 580px;
+}
+
+.glow-nav-bar {
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--nav-border);
+  border-radius: 28px;
+  padding: 6px 12px;
+  box-shadow: var(--nav-shadow), 0 0 0 1px var(--panel-border) inset;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.glow-nav-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+}
+
+.glow-nav-item {
+  position: relative;
+  width: 66px;
+  z-index: 2;
+}
+
+.glow-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #64748b;
+  padding: 8px 0;
+  width: 100%;
+  gap: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+.glow-nav-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: transparent;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #64748b;
+}
+
+.glow-nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  letter-spacing: 0.3px;
+}
+
+/* Active state — icon pops up with color glow */
+.glow-nav-item.active .glow-nav-icon {
+  background: var(--clr);
+  color: #fff;
+  transform: translateY(-20px) scale(1.15);
+  box-shadow:
+    0 6px 25px color-mix(in srgb, var(--clr) 50%, transparent),
+    0 2px 10px color-mix(in srgb, var(--clr) 30%, transparent);
+}
+
+.glow-nav-item.active .glow-nav-link {
+  color: var(--clr);
+}
+
+.glow-nav-item.active .glow-nav-label {
+  opacity: 1;
+  color: var(--clr);
+  font-weight: 700;
+}
+
+/* Glow blur behind active icon */
+.glow-nav-icon::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--clr);
+  border-radius: 50%;
+  filter: blur(10px);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+}
+
+.glow-nav-item.active .glow-nav-icon::before {
+  opacity: 0.4;
+}
+
+/* Hover effect for non-active items */
+.glow-nav-item:not(.active):hover .glow-nav-icon {
+  color: #cbd5e1;
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.glow-nav-item:not(.active):hover .glow-nav-label {
+  opacity: 0.9;
+  color: #cbd5e1;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* ── Premium Animations ─────────────────────────────────────── */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(1deg); }
+  66% { transform: translateY(4px) rotate(-1deg); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes breathing-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(99, 102, 241, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(99, 102, 241, 0.45); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes typewriter-blink {
+  0%, 100% { border-color: transparent; }
+  50% { border-color: currentColor; }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(120px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(120px) rotate(-360deg); }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-gradient-shift { background-size: 200% 200%; animation: gradient-shift 4s ease infinite; }
+.animate-breathing-glow { animation: breathing-glow 3s ease-in-out infinite; }
+.animate-shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+.animate-typewriter-cursor { border-right: 2px solid; animation: typewriter-blink 1s step-end infinite; }
+.animate-orbit { animation: orbit 20s linear infinite; }
