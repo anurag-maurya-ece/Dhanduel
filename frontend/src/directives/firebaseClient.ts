@@ -11,10 +11,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase only if it hasn't been initialized already
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const hasFirebaseConfig = Object.values(firebaseConfig).every((value) => typeof value === "string" && value.length > 0);
 
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Skip initialization during builds/environments where Firebase public env vars are missing.
+const app = hasFirebaseConfig
+  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0])
+  : null;
 
-export { app, auth, db };
+const auth = app ? getAuth(app) : null;
+const db = app ? getFirestore(app) : null;
+
+export { app, auth, db, hasFirebaseConfig };

@@ -35,7 +35,7 @@ export default function LoginPage() {
         router.push("/");
         // Fire-and-forget Firestore profile creation
         const { auth } = await import("@/directives/firebaseClient");
-        const user = auth.currentUser;
+        const user = auth?.currentUser;
         if (user) {
           createUserProfile(user.uid, email, displayName).catch(() => {});
         }
