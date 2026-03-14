@@ -9,13 +9,17 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
+const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL]
+  : [/\.vercel\.app$/, 'http://localhost:3000'];
+
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 // Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: allowedOrigins,
     methods: ['GET', 'POST']
   }
 });
