@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { initSocket, disconnectSocket } from "../lib/socketClient";
+import { initSocket, disconnectSocket, hasRealtimeBackend } from "../lib/socketClient";
 import { useAuth } from "@/lib/AuthContext";
 import ArenaTradePanel from "./ArenaTradePanel";
 import {
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
+type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error" | "unavailable";
 
 interface ChatMessage {
   userId: string;
@@ -68,8 +68,18 @@ export default function MultiplayerLobby() {
   }, [messages]);
 
   const connectSocket = useCallback(() => {
+    if (!hasRealtimeBackend()) {
+      setConnectionStatus("unavailable");
+      return null;
+    }
+
     setConnectionStatus("connecting");
     const socket = initSocket();
+
+    if (!socket) {
+      setConnectionStatus("unavailable");
+      return null;
+    }
 
     socket.on("connect", () => {
       setConnectionStatus("connected");
@@ -106,6 +116,10 @@ export default function MultiplayerLobby() {
   useEffect(() => {
     const socket = connectSocket();
     return () => {
+      if (!socket) {
+        return;
+      }
+
       socket.off("connect");
       socket.off("disconnect");
       socket.off("connect_error");
@@ -117,6 +131,11 @@ export default function MultiplayerLobby() {
   }, [connectSocket]);
 
   const handleRetry = () => {
+    if (!hasRealtimeBackend()) {
+      setConnectionStatus("unavailable");
+      return;
+    }
+
     disconnectSocket();
     connectSocket();
   };
@@ -131,6 +150,10 @@ export default function MultiplayerLobby() {
     setInRoom(true);
     setMessages([]); // New room = fresh chat
     const socket = initSocket();
+    if (!socket) {
+      setConnectionStatus("unavailable");
+      return;
+    }
     socket.emit("join-room", { roomId: newRoom, userId });
     socket.emit("update-leaderboard", { roomId: newRoom, userId, pnl: 0 });
     // Save room to Firestore
@@ -155,6 +178,10 @@ export default function MultiplayerLobby() {
       })
       .catch(() => setMessages([]));
     const socket = initSocket();
+    if (!socket) {
+      setConnectionStatus("unavailable");
+      return;
+    }
     socket.emit("join-room", { roomId: code, userId });
     socket.emit("update-leaderboard", { roomId: code, userId, pnl: 0 });
     // Add player to Firestore room
@@ -163,7 +190,7 @@ export default function MultiplayerLobby() {
 
   const handleLeaveRoom = () => {
     const socket = initSocket();
-    socket.emit("leave-room", { roomId, userId });
+    socket?.emit("leave-room", { roomId, userId });
     // Save final leaderboard
     endRoom(roomId, leaderboard).catch(() => {});
     setInRoom(false);
@@ -179,6 +206,10 @@ export default function MultiplayerLobby() {
   const handleSendMessage = () => {
     if (!chatInput.trim()) return;
     const socket = initSocket();
+    if (!socket) {
+      setConnectionStatus("unavailable");
+      return;
+    }
     const msg = chatInput.trim();
     socket.emit("chat-message", { roomId, userId, message: msg });
     // Save to Firestore (fire-and-forget)
@@ -197,6 +228,7 @@ export default function MultiplayerLobby() {
     connected: { icon: Wifi, text: "Connected to game server", color: "text-green-400", bg: "bg-green-400/10 border-green-400/20", animate: false },
     disconnected: { icon: WifiOff, text: "Reconnecting…", color: "text-orange-400", bg: "bg-orange-400/10 border-orange-400/20", animate: true },
     error: { icon: WifiOff, text: "Cannot reach server", color: "text-red-400", bg: "bg-red-400/10 border-red-400/20", animate: false },
+    unavailable: { icon: WifiOff, text: "Realtime backend not configured", color: "text-amber-400", bg: "bg-amber-400/10 border-amber-400/20", animate: false },
   };
 
   const currentStatus = statusConfig[connectionStatus];
@@ -243,6 +275,12 @@ export default function MultiplayerLobby() {
             </div>
           </div>
         </motion.div>
+
+        {connectionStatus === "unavailable" && (
+          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300 transition-colors">
+            Multiplayer needs a deployed backend server. Set `NEXT_PUBLIC_API_URL` in Vercel to your live Socket.IO backend URL.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Leaderboard — left column */}

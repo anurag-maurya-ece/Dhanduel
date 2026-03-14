@@ -65,6 +65,7 @@ export default function ArenaTradePanel({ roomId, userId }: ArenaProps) {
   useEffect(() => {
     if (!roomId) return;
     const socket = initSocket();
+    if (!socket) return;
     socket.emit("update-leaderboard", { roomId, userId, pnl: parseFloat(pnl.toFixed(2)) });
   }, [pnl, roomId, userId]);
 
